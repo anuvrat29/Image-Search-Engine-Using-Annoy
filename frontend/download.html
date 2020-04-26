@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <link rel="icon" href="https://cdn.analyticsvidhya.com/wp-content/uploads/2018/03/knn3.png" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <title> Image Search Engine </title>
+
+        <style>
+            h1 {
+                text-align: center;
+                padding-top: 0px;
+            }
+            .img {
+                background-image: url("https://www.webdesignerdepot.com/cdn-origin/uploads/2018/04/featured_nlp.jpg");
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: 100% 100%;
+            }
+            .container {
+                width: 100%;
+                height: 100%;
+            }
+            .toppane {
+                height: 20%;
+                width: 100%;
+            }
+            .lowerpane {
+                width: 100%;
+                height: 60%;
+                padding-top: 2%;
+                position: relative;
+                border-collapse: collapse;
+            }
+            #train-div, #predict-div, #admin-info {
+                display: none;
+            }
+            .button {
+                opacity: 0.9;
+                border: none;
+                color: white;
+                width: 175px;
+                cursor: pointer;
+                font-size: 13px;
+                margin: 4px 2px;
+                transition: 0.3s;
+                padding: 12px 30px;
+                text-align: center;
+                border-radius: 15px;
+                display: inline-block;
+                text-decoration: none;
+                background-color: #f4511e;
+            }
+            .button:focus, .button:active, .button:focus:active, .button:hover {
+                outline: all;
+                -webkit-box-shadow: all;
+                box-shadow: currentColor;
+            }
+            #pageloader {
+                cursor: wait;
+                display: none;
+                position: fixed;
+                z-index: +100 !important;
+            }
+            #pageloader img {
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 80%;
+                height: 100%;
+                position: fixed;
+                padding-left: 10%;
+                padding-right: 10%;
+                text-align: center;
+                background-repeat: no-repeat !important;
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            textarea {
+                resize: none;
+                background:transparent;
+                border: none;
+                text-align: center;
+                font-weight: bold;
+                font-family: "verdana";
+                font-size: 12pt;
+            }
+        </style>
+    </head>
+
+    <body align="center" class="img">
+        <div class="container" id="pageloader">
+            <img src="https://flevix.com/wp-content/uploads/2019/07/Bubble-Preloader-1.gif" alt="processing..."/>
+        </div>
+        
+        <div class="container">
+            <div class="toppane">
+                <h1> Image Search Engine </h1>
+            </div>
+            <br/>
+            <div class="lowerpane" id="bottom" align="center">
+
+                <div id="train-div">
+                    <b>
+                        <textarea readonly cols=80 rows=1> {{data.message}} </textarea>
+                    </b>
+                    <br/> <br/>
+                </div>
+
+                <div id="train-div1" style="{{data.info}}">
+                    <b>
+                        <textarea readonly cols=80 rows=4>Feature Dimension: {{data.feature_dimension}} &#13;&#10; Distance Metric: {{data.metric}} &#13;&#10; Prepared Model Filename: {{data.model_name}} &#13;&#10; </textarea>
+                    </b>
+                    <br/> <br/>
+                </div>
+
+                <div id="predict-div">
+                    <h2> Nearest Images as per Below </h2>
+                    <div id="response-predict" style="width: 90%; height: 50%;"> </div>
+                </div>
+
+                <div>
+                    <button type="button" class="button" onclick="goBack()">Go Back</button>
+                </div>
+
+            </div>
+        </div>
+        <script>
+            $(window).ready(function() {
+                $("#{{data.tag}}").show();
+                $("#{{data.tag}}1").show();
+                if($('#predict-div').is(':visible')) {
+                    showImage();
+                }
+            })
+            function goBack() {
+                window.history.back();
+            }
+            function showImage() {
+                var json = JSON.parse('{{data|tojson|safe}}');
+                var array = json.response;
+                var imagestring = "<span>";
+                for(i=0; i<array.length; i++) {
+                    imagestring += '<img width="200px" height="200px" src="/anuvrat/'+ array[i] + '" />';
+                }
+                imagestring += "</span>";
+                document.getElementById("response-predict").innerHTML = imagestring;
+            }
+        </script>
+    </body>
+</html>

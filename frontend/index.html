@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <link rel="icon" href="https://cdn.analyticsvidhya.com/wp-content/uploads/2018/03/knn3.png" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <title> Image Search Engine </title>
+
+        <style>
+            h1 {
+                text-align: center;
+                padding-top: 0px;
+            }
+            .img {
+                background-image: url("https://www.webdesignerdepot.com/cdn-origin/uploads/2018/04/featured_nlp.jpg");
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: 100% 100%;
+            }
+            .container {
+                width: 100%;
+                height: 100%;
+            }
+            .toppane {
+                height: 20%;
+                width: 100%;
+            }
+            .lowerpane {
+                width: 100%;
+                height: 60%;
+                padding-top: 2%;
+                position: relative;
+                border-collapse: collapse;
+            }
+            #bottom {
+                display: none;
+            }
+            .button {
+                opacity: 0.9;
+                border: none;
+                color: white;
+                width: 175px;
+                cursor: pointer;
+                font-size: 13px;
+                margin: 4px 2px;
+                transition: 0.3s;
+                padding: 12px 30px;
+                text-align: center;
+                border-radius: 15px;
+                display: inline-block;
+                text-decoration: none;
+                background-color: #f4511e;
+            }
+            .button:focus, .button:active, .button:focus:active, .button:hover {
+                outline: all;
+                -webkit-box-shadow: all;
+                box-shadow: currentColor;
+            }
+            #pageloader {
+                cursor: wait;
+                display: none;
+                position: fixed;
+                z-index: +100 !important;
+            }
+            #pageloader img {
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 80%;
+                height: 100%;
+                position: fixed;
+                padding-left: 10%;
+                padding-right: 10%;
+                text-align: center;
+                background-repeat: no-repeat !important;
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            input[type="file"] {
+                display: block;
+            }
+            input[type="submit"][disabled]:active, input[type="submit"][disabled] {
+                background-color: #808080;
+                border: none;
+                color: white;
+                padding: 12px 24px;
+                text-align: center;
+                font-size: 13px;
+                margin: 4px 2px;
+                opacity: 1;
+                transition: 0.3s;
+                display: inline-block;
+                text-decoration: none;
+                border-radius: 15px;
+            }
+            .imageThumb {
+                width: 100px;
+                height: 100px;
+                border: 2px solid;
+                padding: 1px;
+                cursor: pointer;
+            }
+            .pip {
+                display: inline-block;
+                margin: 10px 10px 0 0;
+            }
+            table {
+                border-collapse: separate;
+                border-spacing: 0.5em 0.5em;
+            }
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: center;
+                padding: 4px;
+            }
+        </style>
+
+        <script>
+            $(window).ready(function() {
+                $("#myform1").on("submit", function() {
+                    $("#pageloader").fadeIn("slow");
+                });
+                $("#train").on("click", function() {
+                    $("#bottom").show()
+                    $("#train-div").show()
+                    $("#predict-div").hide()
+                    $("#uploadedimage").hide()
+                });
+                $("#predict").on("click", function() {
+                    $("#bottom").show()
+                    $("#train-div").hide()
+                    $("#predict-div").show()
+                    $("#uploadedimage").show()
+                });
+                $('input:file').on("change", function() {
+                    if ($(this).val()) {
+                        $('input:submit').attr('disabled', false);
+                    }
+                });
+                if (window.File && window.FileList && window.FileReader) {
+                    $("#files").on("change", function(event1) {
+                        $('#information').hide();
+                        var files = event1.target.files;
+
+                        for(var i=0; i<files.length; i++) {
+                            var f = files[i];
+                            var fileReader = new FileReader();
+                            fileReader.onload = (function(event2) {
+                                $('<span class="pip">'
+                                    + '<img class="imageThumb" src="'+event2.target.result+'">'
+                                    + '</span>').insertAfter("#images");
+                            });
+                            fileReader.readAsDataURL(f);
+                        }
+                    });
+                    $("#file").on("change", function(event1) {
+                        var files = event1.target.files;
+
+                        for(var i=0; i<files.length; i++) {
+                            var f = files[i];
+                            var fileReader = new FileReader();
+                            fileReader.onload = (function(event2) {
+                                $('<img src="'+event2.target.result+'">').insertAfter("#searchimage");
+                            });
+                            fileReader.readAsDataURL(f);
+                        }
+                    });                    
+                } else {
+                    alert("Your browser doesn't support to File API")
+                }
+                fetch("/anuvrat/imageannoy/getmodels")
+                    .then(response => response.json())
+                    .then(json => {
+                                    data = json.models;
+                                    size = 10 > data.length ? data.length : 10;
+                                    var multiselect = '<select size='+size+' multiple id="model" name="model">';
+                                    for(i=0; i<data.length; i++) {
+                                        multiselect += '<option value="' + data[i] + '">' + data[i] + '</option>';
+                                    }
+                                    multiselect += '</select>';
+                                    document.getElementById("models").innerHTML = multiselect;
+                                });
+            });
+        </script>
+    </head>
+
+    <body align="center" class="img">
+        <div class="container" id="pageloader">
+            <img src="https://flevix.com/wp-content/uploads/2019/07/Bubble-Preloader-1.gif" alt="processing..."/>
+        </div>
+        
+        <div class="container">
+            <div class="toppane">
+                <h1> Image Search Engine </h1>
+            </div>
+            <div class="toppane" id="top">
+                <button class="button" id="train"> Prepare Model </button>
+                <button class="button" id="predict"> Prediction </button>
+            </div>
+
+            <div class="lowerpane" id="bottom" align="center">
+
+                <div id="train-div">
+                    <form action="/anuvrat/imageannoy/prepare_model" method="post" enctype="multipart/form-data" id="myform1" autocomplete="off">
+                        <table>
+                            <tr>
+                                <th align="center"> Select Metric </th>
+                                <th align="center"> Annoy Trees </th>
+                                <th align="center"> Model File Name (no extension) </th>
+                                <th align="center"> Upload Image Database </th>
+                            </tr>
+                            <tr>
+                                <td align="center"> 
+                                    <select id="metric" name="metric">
+                                        <option value="angular" selected disabled hidden>Choose Metric</option>
+                                        <option value="angular">Angular</option>
+                                        <option value="euclidean">Euclidean</option>
+                                        <option value="manhattan">Manhattan</option>
+                                        <option value="hamming">Hamming</option>
+                                        <option value="dot">Dot</option>
+                                    </select>
+                                </td>
+                                <td align="center"> <input type="input" name="annoy_tree" placeholder="Enter No. of Trees" size=13> </td>
+                                <td align="center"> <input type="input" name="model_name" placeholder="Enter model name otherwise timestamp" size=32> </td>
+                                <td align="center"> <input type="file" id="files" name="files" accept=".jpg, .jpeg, .png" multiple> </td>
+                                <td> <input type="submit" id="submit1" class="button" value="Submit" disabled> </td>
+                            </tr>
+                        </table>
+                    </form>
+                    <div id="images"></div>
+                    <div id="information" align="center">
+                        <table>
+                            <tr>
+                                <th style="text-align: left;"> Metric </th>
+                                <td style="text-align: left;"> There are 4 types of metrics - AnnoyIndex(f, metric) returns a new index that's read-write and stores vector of f dimensions.
+                                    <ol>
+                                        <li>Angular</li>
+                                        <li>Euclidean</li>
+                                        <li>Manhattan</li>
+                                        <li>Hamming</li>
+                                        <li>Dot</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr >
+                                <th style="text-align: left;"> Annoy Trees </th>
+                                <td style="text-align: left;"> a.build(n_trees) builds a forest of n_trees trees.
+                                    <ul>
+                                        <li>More trees gives higher precision when querying.</li>
+                                        <li>After calling build, no more items can be added.</li>
+                                        <li>a.build(n_trees) if n_trees is larger then it will increase accuracy but be aware the overfitting problem.</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;"> Enter Model Name </th>
+                                <td style="text-align: left;">
+                                    <ul>
+                                        <li>Type model name in this without extension.</li>
+                                        <li>If its null then model file name is year-month-day-hour-minute</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="predict-div">
+                    <form action="/anuvrat/imageannoy/predict" method="post" enctype="multipart/form-data" id="myform2" autocomplete="off">
+                        <table align="center">
+                            <tr>
+                                <th> Upload a file &nbsp;&nbsp;&nbsp;&nbsp; </th>
+                                <td> <input type="file" id="file" name="file" accept=".jpg, .jpeg, .png"> </td>
+                            </tr>
+                            <tr>
+                                <th> Number of Nearest Images &nbsp;&nbsp;&nbsp;&nbsp; </th>
+                                <td> <input type="input" name="number_of_images" placeholder="Enter Number of Images" size=20> </td>
+                            </tr>
+                            <tr>
+                                <th> Select Model &nbsp;&nbsp;&nbsp;&nbsp; </th>
+                                <td> <span id="models"> </span> </td>
+                            </tr>
+                            <tr>
+                                <th colspan="2">
+                                    <input type="submit" id="submit2" class="button" value="Submit" disabled>
+                                </th>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="uploadedimage">
+                    <h4> Uploaded Image for to search nearest Images </h4> <br/>
+                    <span id="searchimage"></span>
+                </div>
+
+            </div>
+        </div>
+    </body>
+</html>
